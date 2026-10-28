@@ -2,7 +2,7 @@ const http = require('node:http');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const {worksheet, percentages} = require('./public/questions');
+const {generateQuestions} = require('./public/questions');
 const ROOT = path.join(__dirname, 'public');
 const DATA = process.env.RESULTS_DIR || path.join(__dirname, 'results');
 const LIMIT = 256 * 1024;
@@ -15,11 +15,10 @@ function filename(run) {return `${safeName(run.player)}_${run.startedAt.replace(
 async function save(run) {run.summary={solved:run.questions.filter(q=>q.solved).length,totalAttempts:run.questions.reduce((n,q)=>n+q.attempts.length,0),problemsWithMistakes:run.questions.filter(q=>q.attempts.some(a=>!a.correct)).map(q=>({questionId:q.id,fraction:`${q.n}/${q.d}`,slices:q.slices,wrongAttempts:q.attempts.filter(a=>!a.correct).length,attemptsNeededToGetRight:q.solved?q.attempts.length:null}))};await fs.mkdir(DATA,{recursive:true});const file=path.join(DATA,filename(run));const tmp=file+'.tmp';await fs.writeFile(tmp,JSON.stringify(run,null,2));await fs.rename(tmp,file);}
 async function readRun(id) {if(!/^[0-9a-f-]{36}$/.test(id)) throw Error('Invalid run');const files=await fs.readdir(DATA);const file=files.find(f=>f.endsWith(`_${id}.json`));if(!file)throw Error('Run not found');return JSON.parse(await fs.readFile(path.join(DATA,file),'utf8'));}
 function publicRun(run) {return {...run,filename:filename(run)};}
-function sequence(mode) {return mode==='percentages'?percentages:worksheet;}
 async function createRun(input) {
  const player=String(input.player||'').trim();if(!player||player.length>32)throw Error('Enter a name of 1–32 characters');
  if(!['worksheet','percentages'].includes(input.mode))throw Error('Choose a valid adventure');
- const run={version:1,id:crypto.randomUUID(),player,mode:input.mode,startedAt:new Date().toISOString(),completedAt:null,currentIndex:0,score:0,questions:sequence(input.mode).map(q=>({...q,target:q.n*q.slices/q.d,attempts:[],solved:false}))};
+ const run={version:2,id:crypto.randomUUID(),player,mode:input.mode,startedAt:new Date().toISOString(),completedAt:null,currentIndex:0,score:0,questions:generateQuestions(input.mode).map(q=>({...q,target:q.n*q.slices/q.d,targetPercent:q.n/q.d*100,attempts:[],solved:false}))};
  await save(run);return run;
 }
 async function updateRun(id,input) {
@@ -29,10 +28,11 @@ async function updateRun(id,input) {
   if(input.questionId!==q.id)throw Error('Question changed; reload the run');
   if(!Array.isArray(input.selected)||input.selected.length>q.slices||input.selected.some(i=>!Number.isInteger(i)||i<0||i>=q.slices)||new Set(input.selected).size!==input.selected.length)throw Error('Invalid shaded segments');
   const correct=input.selected.length*q.d===q.n*q.slices;
-  q.attempts.push({at:new Date().toISOString(),selected:input.selected,shaded:input.selected.length,correct});q.solved=correct;
+  q.attempts.push({at:new Date().toISOString(),selected:input.selected,shaded:input.selected.length,shadedPercent:input.selected.length/q.slices*100,correct});q.solved=correct;
   if(correct)run.score+=Math.max(20,100-(q.attempts.length-1)*20);
  } else if(input.action==='next') {
   if(!q?.solved)throw Error('Solve this question first');
+  if(input.questionId && input.questionId!==q.id)throw Error('Question changed; reload the run');
   if(run.currentIndex<run.questions.length-1)run.currentIndex++;
   else run.completedAt ||= new Date().toISOString();
  } else throw Error('Unknown action');

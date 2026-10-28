@@ -4,3 +4,16 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 @media(max-width:700px){.prompt-card h2 br:after{content:" "}.prompt-card h2 br{display:inline}}
+
+.target-percent{font-size:14px;font-weight:700;color:var(--green);margin:-10px 0 18px;line-height:1.5}
+.advance-status{padding:17px 12px;border-radius:10px;background:#e4f3e6;color:var(--green);font-size:13px;font-weight:700}
+#celebration{overflow:hidden;border-radius:50%}
+.confetti{animation:quest-burst .85s cubic-bezier(.12,.6,.3,1) both;line-height:1}
+@keyframes quest-burst{0%{transform:translate(-50%,-50%) scale(.2) rotate(0);opacity:0}12%{opacity:1}65%{opacity:1}100%{transform:translate(var(--x),var(--y)) scale(.65) rotate(var(--spin));opacity:0}}
+.correct-pulse{animation:quest-bounce .7s ease-in-out;transform-origin:center}
+@keyframes quest-bounce{0%,100%{transform:scale(1) rotate(0)}25%{transform:scale(.92) rotate(-4deg)}55%{transform:scale(1.07) rotate(4deg)}80%{transform:scale(.98) rotate(-1deg)}}
+.success-badge{position:absolute;z-index:2;top:43%;left:50%;transform:translate(-50%,-50%);white-space:nowrap;border-radius:30px;background:#173f3b;color:#fff6cf;padding:15px 22px;font-size:23px;font-weight:700;box-shadow:0 6px 20px #173f3b33;animation:badge-pop .85s both}
+@keyframes badge-pop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}25%{transform:translate(-50%,-50%) scale(1.15);opacity:1}50%,90%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-65%) scale(.95);opacity:0}}
+.celebration-ring{position:absolute;inset:12%;border:7px solid #edb650;border-radius:50%;animation:ring-pop .8s ease-out both}
+@keyframes ring-pop{from{transform:scale(.25);opacity:1}to{transform:scale(1.4);opacity:0}}
+@media(max-width:700px){.target-percent{grid-column:1;grid-row:3;margin:0 0 6px;font-size:12px}.target-fraction{grid-row:1/5}.prompt-card>p{grid-row:4}.success-badge{font-size:20px}}

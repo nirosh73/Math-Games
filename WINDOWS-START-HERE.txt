@@ -42,3 +42,11 @@ http://localhost:3000 or close the earlier game window.
 
 This package does not install itself or upload your results.
 See README.md for full details and game rules.
+
+UPDATING AN EXISTING COPY
+Close the old game window first. Download a fresh ZIP from GitHub and
+extract it into a new folder. Copy your old results folder into the
+new game folder if you want to keep player history. Start the new
+launcher and press Ctrl+F5 in the browser to load the updated game.
+Start a new adventure to get freshly generated questions; resuming an
+existing adventure keeps its saved questions.
