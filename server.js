@@ -54,10 +54,19 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&route==='/api/leaderboard') {
    await fs.mkdir(DATA,{recursive:true});const files=(await fs.readdir(DATA)).filter(f=>f.endsWith('.json'));
    const runs=await Promise.all(files.map(async f=>{try{return JSON.parse(await fs.readFile(path.join(DATA,f),'utf8'));}catch{return null;}}));
-   return json(res,200,runs.filter(r=>r?.completedAt).sort((a,b)=>b.score-a.score).slice(0,20).map(r=>({player:r.player,score:r.score,mode:r.mode,completedAt:r.completedAt,firstTry:r.questions.filter(q=>q.attempts.length===1).length,total:r.questions.length})));
+   // A Hall of Fame entry is a nickname's best completed run in each adventure.
+   const players=new Map();
+   for(const r of runs.filter(r=>r?.completedAt)) {
+    const key=JSON.stringify([r.player.normalize('NFKC').toLowerCase(),r.mode]);
+    const previous=players.get(key), games=(previous?.games||0)+1;
+    const row={player:r.player,score:r.score,mode:r.mode,completedAt:r.completedAt,firstTry:r.questions.filter(q=>q.attempts.length===1).length,total:r.questions.length,games};
+    if(!previous || row.score>previous.score || (row.score===previous.score && row.firstTry>previous.firstTry)) players.set(key,row);
+    else previous.games=games;
+   }
+   return json(res,200,[...players.values()].sort((a,b)=>a.mode.localeCompare(b.mode)||b.score-a.score||b.firstTry-a.firstTry||a.player.localeCompare(b.player)));
   }
   if(req.method!=='GET')return json(res,404,{error:'Not found'});
-  const files={'/':'index.html','/app.js':'app.js','/styles.css':'styles.css','/questions.js':'questions.js'};
+  const files={'/':'index.html','/app.js':'app.js','/styles.css':'styles.css','/questions.js':'questions.js','/learning.js':'learning.js','/monsters.js':'monsters.js'};
   const file=files[route];if(!file)return json(res,404,{error:'Not found'});
   const data=await fs.readFile(path.join(ROOT,file));res.writeHead(200,{...headers,'Content-Type':file.endsWith('.html')?'text/html; charset=utf-8':file.endsWith('.css')?'text/css':'text/javascript'});res.end(data);
  }catch(error){json(res,400,{error:error.message});}

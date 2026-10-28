@@ -104,3 +104,24 @@ test('names and modes are required; static files do not expose server or results
   assert.equal((await fetch(base+'/server.js')).status,404);
   assert.equal((await fetch(base+'/results/')).status,404);
 });
+test('Hall of Fame includes every player, groups modes and retains each nickname’s best score',async()=>{
+  const fixtures=[];
+  function fixture(player,score,mode='worksheet',complete=true){
+    const id=`hall-${fixtures.length}`;
+    fixtures.push({player,score,mode,completedAt:complete?'2026-10-28T12:00:00Z':null,questions:Array.from({length:mode==='worksheet'?20:8},()=>({attempts:[{correct:true}]}))});
+    return fs.writeFile(path.join(dir,id+'.json'),JSON.stringify(fixtures.at(-1)));
+  }
+  for(let i=0;i<24;i++)await fixture(`Hall Explorer ${i}`,1000+i);
+  await fixture('HALL EXPLORER 0',1900);
+  await fixture('Hall Explorer 0',700);
+  await fixture('Hall Explorer 0',800,'percentages');
+  await fixture('Hall Incomplete',2000,'worksheet',false);
+  const {data:board}=await request('/api/leaderboard');
+  assert.equal(board.filter(r=>r.player.toLowerCase().startsWith('hall explorer')&&r.mode==='worksheet').length,24);
+  const best=board.find(r=>r.player.toLowerCase()==='hall explorer 0'&&r.mode==='worksheet');
+  assert.equal(best.score,1900);assert.equal(best.games,3);
+  assert.equal(board.find(r=>r.player==='Hall Explorer 0'&&r.mode==='percentages').score,800);
+  assert.ok(!board.some(r=>r.player==='Hall Incomplete'));
+  const foundations=board.filter(r=>r.mode==='worksheet');
+  assert.ok(foundations.every((r,i)=>i===0||foundations[i-1].score>=r.score));
+});
