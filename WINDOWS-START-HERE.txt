@@ -1,0 +1,44 @@
+SLICE QUEST - WINDOWS QUICK START
+
+1. Install Node.js: visit https://nodejs.org/ and install the LTS
+   version using the Windows installer and its default settings.
+   Node.js 22 or newer is required. You only need to do this once.
+
+2. On https://github.com/nirosh73/Math-Games choose Code > Download ZIP.
+   Right-click the Math-Games-main.zip download and choose Extract All.
+   Extract it somewhere you want to keep the game and its results,
+   such as Documents. Do not run the game from inside the ZIP.
+
+3. Open the extracted Math-Games-main folder and double-click
+   Start Slice Quest.cmd. Keep the resulting window open while playing.
+
+4. Open your browser (Edge, Chrome, or Firefox) and enter:
+   http://localhost:3000
+
+5. Enter a nickname, choose an adventure, and play.
+   Use the Sound button for audio feedback.
+
+RESULTS
+After every submitted answer, a uniquely named player JSON file is
+saved automatically in the results folder beside the launcher.
+You can also download a results file from within the game.
+Keep the game folder to keep your saved records.
+
+STOPPING AND RESTARTING
+Close the launcher window to stop the game.
+Double-click the launcher again to play another time.
+No Internet connection is needed while playing.
+
+IF THE LAUNCHER DOES NOT WORK
+After installing Node.js, close old terminal windows and try again.
+As an alternative, open the game folder in File Explorer, click the
+address bar, type cmd, and press Enter. In that window, type:
+node server.js
+Then open http://localhost:3000 in your browser.
+
+If you see an EADDRINUSE error, another program is using port 3000.
+An existing copy of Slice Quest may already be running; try opening
+http://localhost:3000 or close the earlier game window.
+
+This package does not install itself or upload your results.
+See README.md for full details and game rules.
